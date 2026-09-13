@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Train LLM From Scratch",
+      "hasCanvas": false,
+      "bodyTextLen": 8893,
+      "bodyTextHash": "4ef57ca3f45d4e9623505e9b685e6f2227c2953dec6f16f253ff76ccd9dbe9a9",
+      "bodyTextPrefix": "τ FROM SCRATCH Path Model Loss Align Eval Name Repo τ τ AFTER AT",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Train LLM From Scratch",
+      "hasCanvas": false,
+      "bodyTextLen": 8893,
+      "bodyTextHash": "4ef57ca3f45d4e9623505e9b685e6f2227c2953dec6f16f253ff76ccd9dbe9a9",
+      "bodyTextPrefix": "τ FROM SCRATCH Path Model Loss Align Eval Name Repo τ τ AFTER AT",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
