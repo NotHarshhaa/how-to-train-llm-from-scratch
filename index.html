@@ -424,7 +424,8 @@
             Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
           </p>
           <p class="text-subtle" style="font-size: 0.75rem; margin-top: 0.75rem; line-height: 1.5;">
-            April: 48. May: 48 / 2 = 24. Total: 48 + 24 = 72.
+            April: 48. May: 48 / 2 = 24. Total: 48 + 24 = 72.<br>
+            Verifier RL reward: 1.0 (Gold accuracy) + 0.2 (&lt;answer&gt; tag format) = 1.2 max reward.
           </p>
 
           <label for="completion-input" class="field-label" style="margin-top: 1.25rem;">
@@ -595,6 +596,19 @@ pip install -e ".[all]"</pre>
               </button>
             </div>
             <pre class="copy-pre">NPROC=1 bash scripts/run_posttraining.sh</pre>
+          </div>
+
+          <!-- UI Control Panel -->
+          <div class="copy-block">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Control Panel (UI)</p>
+              <button type="button" class="copy-btn" data-code="pip install -e &quot;.[ui]&quot;&#10;streamlit run ui/app.py">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+              </button>
+            </div>
+            <pre class="copy-pre">pip install -e ".[ui]"
+streamlit run ui/app.py</pre>
           </div>
         </div>
       </div>

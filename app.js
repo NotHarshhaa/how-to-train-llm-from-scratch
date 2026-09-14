@@ -125,6 +125,7 @@ const PRESETS = [
   { id: "13m", label: "13M", nEmbed: 128, nHead: 8, nBlocks: 1, contextLength: 256, reported: 13142656 },
   { id: "77m", label: "77M", nEmbed: 512, nHead: 8, nBlocks: 8, contextLength: 512, reported: 77031552 },
   { id: "406m", label: "406M", nEmbed: 1024, nHead: 16, nBlocks: 24, contextLength: 1024, reported: 406359168 },
+  { id: "3b", label: "3B", nEmbed: 2048, nHead: 16, nBlocks: 64, contextLength: 512, reported: 3430733312 },
 ];
 
 const POINTS = [
@@ -680,13 +681,20 @@ function initEvalSection() {
 
   function evaluate() {
     const raw = input.value;
+    const hasTag = /<answer>\s*([^<]+?)\s*<\/answer>/i.test(raw);
     const parsed = parseAnswer(raw);
-    const correct = parsed !== null && parsed.replace(/,/g, "") === PROBLEM.gold;
+    const isGold = parsed !== null && parsed.replace(/,/g, "") === PROBLEM.gold;
+
+    // Verifier RL reward as per Fareed Khan's src/post_training/rewards.py
+    let reward = 0.0;
+    if (hasTag && isGold) reward = 1.2;      // Correct AND well formatted (+0.2 tag bonus)
+    else if (hasTag && !isGold) reward = 0.2; // Format bonus only
+    else if (!hasTag && isGold) reward = 1.0; // Correct without tag
 
     resultsDl.style.display = "flex";
     parsedEl.textContent = parsed ?? "—";
-    verdictEl.textContent = correct ? "match" : "miss";
-    verdictEl.className = `font-mono ${correct ? "text-fg" : "text-mark"}`;
+    verdictEl.textContent = `${isGold ? "match" : "miss"} (reward: ${reward.toFixed(1)})`;
+    verdictEl.className = `font-mono ${isGold ? "text-fg" : "text-mark"}`;
   }
 
   form.onsubmit = (e) => {
