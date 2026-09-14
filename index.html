@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train LLM From Scratch</title>
+  <meta name="description" content="τ — training an LLM from scratch: one Transformer, a first loss, a source-line of stages, and a unique sink at chat.">
+  <meta name="theme-color" content="#0c0b0a">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Train LLM From Scratch">
+  <meta property="og:description" content="An interactive reading of the handwritten PyTorch transformer pipeline from scratch.">
+  <meta property="og:image" content="og.jpg">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Typography: Preconnect & Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="logo">
+        <span class="logo-tau">τ</span>
+        <span class="logo-text">From Scratch</span>
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href="#path" class="nav-link">Path</a>
+        <a href="#model" class="nav-link">Model</a>
+        <a href="#loss" class="nav-link">Loss</a>
+        <a href="#align" class="nav-link">Align</a>
+        <a href="#eval" class="nav-link">Eval</a>
+        <a href="#name" class="nav-link">Name</a>
+        <a href="#repo" class="nav-link">Repo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="top" class="hero-section">
+      <div aria-hidden="true" class="tau-watermark">τ</div>
+      <div class="container hero-content stagger-in">
+        <p class="eyebrow">
+          <span class="eyebrow-tau">τ</span>
+          After Attention, without the wrappers
+        </p>
+        <h1 class="hero-title">
+          Training an LLM from <span class="italic">scratch</span>
+        </h1>
+        <p class="hero-text">
+          Code proves a path, not a product. Here the path is occupied: one architecture, a first
+          loss, a source-line of stages, and a unique sink at chat. From-scratch names that path —
+          fitted, not forced.
+        </p>
+        <div class="btn-group">
+          <a href="#path" class="btn-primary">Walk the source-line</a>
+          <a href="#model" class="btn-secondary">Compute τ(d)</a>
+        </div>
+        <p class="hero-pipeline-preview">
+          <span>raw text</span>
+          <span class="text-subtle/50"> → </span>
+          <span>tokens</span>
+          <span class="text-subtle/50"> → </span>
+          <span>Transformer</span>
+          <span class="text-subtle/50"> → </span>
+          <span>CE loss</span>
+          <span class="text-subtle/50"> → </span>
+          <span>base</span>
+          <span class="text-subtle/50"> → </span>
+          <span>SFT</span>
+          <span class="text-subtle/50"> → </span>
+          <span>RM</span>
+          <span class="text-subtle/50"> → </span>
+          <span>DPO</span>
+          <span class="text-subtle/50"> → </span>
+          <span>PPO</span>
+          <span class="text-subtle/50"> → </span>
+          <span>GRPO</span>
+          <span class="text-subtle/50"> → </span>
+          <span>chat<sup class="text-mark">∞</sup></span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Path & Tokenize Section -->
+    <section id="path" class="site-section">
+      <div class="container section-grid">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <p class="eyebrow">The operator</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em;">The source-line</h2>
+          <p class="text-muted" style="line-height: 1.625;">
+            The whole journey is one idea repeated: turn text into numbers, predict the next token,
+            then keep changing the data and the loss until the model does what we want. This repo
+            occupies that line from The Pile to chat, in plain PyTorch.
+          </p>
+          <p class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word;">
+            τ : text → tokens → Transformer → CE → base → SFT → {PPO, DPO} → GRPO → chat
+          </p>
+          <div class="btn-group" style="margin-top: 0.5rem;">
+            <button type="button" id="walk-btn" class="btn-primary">Walk the source-line</button>
+            <button type="button" id="reset-walk-btn" class="btn-secondary">Reset</button>
+          </div>
+        </div>
+
+        <aside class="card">
+          <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">FN · eleven seats</p>
+          <ol id="pipeline-list" class="pipeline-list"></ol>
+          <p id="pipeline-current-label" class="font-display italic text-fg" style="font-size: 1.5rem; margin-top: 1.25rem;"></p>
+          <p id="pipeline-current-hint" class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;"></p>
+        </aside>
+      </div>
+
+      <div class="container" style="padding-bottom: 4rem;">
+        <div class="card">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 0.75rem;">
+            <div>
+              <p class="eyebrow">Tokenize</p>
+              <h3 style="font-size: 1.5rem; margin-top: 0.5rem;">Write n as pieces</h3>
+            </div>
+            <p id="tok-count" class="font-mono text-subtle" style="font-size: 0.75rem;"></p>
+          </div>
+
+          <label for="tok-input" class="field-label" style="margin-top: 1.25rem;">
+            Raw text
+          </label>
+          <textarea id="tok-input" rows="3" class="text-area">Attention is all you need to train an LLM from scratch.</textarea>
+          <p class="text-subtle" style="font-size: 0.75rem; margin-top: 0.5rem; line-height: 1.5;">
+            The repo uses tiktoken <span class="text-fg">r50k_base</span> (50 257 tokens, padded to 50 304).
+            This box splits on the GPT-2 regex and hashes each piece so you can see the cut.
+          </p>
+
+          <div id="tokens-container" style="display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 1rem;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model Section -->
+    <section id="model" class="site-section">
+      <div class="container section-grid">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <p class="eyebrow">The architecture</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em;">Analeza, for nets</h2>
+          <p class="text-muted" style="line-height: 1.625;">
+            τ is the kucwenga map of this repo: write a model as (embed × 1), split every block down
+            to MLP and Head, then sum every Linear the splits produce. For n_embed = d the lemma
+            gives a single formula, independent of split order.
+          </p>
+          <p class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word;">
+            τ(d, N, T, V) = Vd + Td + N(12d² + 10d) + 2d + Vd + V
+          </p>
+          <p class="text-subtle" style="font-size: 0.75rem; line-height: 1.5;">
+            Vocab V is 50 304. Untied lm_head. Attention keys have no bias; MLP and projections do.
+            Reported 13M / 77M / 406M counts come from the README; custom uses the formula above.
+          </p>
+        </div>
+
+        <form class="card" onsubmit="event.preventDefault();">
+          <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Evaluate τ</p>
+          <div id="preset-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;"></div>
+
+          <div class="input-grid">
+            <label class="field-label">
+              n_embed d
+              <input type="number" id="input-nembed" class="field-input" min="64" max="2048" step="64" value="128">
+            </label>
+            <label class="field-label">
+              n_head
+              <input type="number" id="input-nhead" class="field-input" min="1" max="32" step="1" value="8">
+            </label>
+            <label class="field-label">
+              N_BLOCKS
+              <input type="number" id="input-nblocks" class="field-input" min="1" max="48" step="1" value="1">
+            </label>
+            <label class="field-label">
+              context T
+              <input type="number" id="input-context" class="field-input" min="128" max="2048" step="128" value="256">
+            </label>
+          </div>
+
+          <p id="param-broken-msg" class="text-mark" style="display: none; font-size: 0.875rem; margin-top: 1rem;">
+            d must be divisible by n_head. Head size is d / n_head.
+          </p>
+
+          <dl id="param-stats-dl" class="stat-dl">
+            <div class="stat-row">
+              <dt class="text-muted">Parameters</dt>
+              <dd id="param-total" class="font-mono tabular-nums text-fg"></dd>
+            </div>
+            <div class="stat-row">
+              <dt class="text-muted">Compact</dt>
+              <dd id="param-compact" class="font-mono tabular-nums text-fg"></dd>
+            </div>
+            <div class="stat-row">
+              <dt class="text-muted">Head size</dt>
+              <dd id="param-headsize" class="font-mono tabular-nums text-fg"></dd>
+            </div>
+          </dl>
+        </form>
+      </div>
+
+      <!-- Five Seats Code Block -->
+      <div class="container" style="padding-bottom: 2.5rem;">
+        <p class="eyebrow">The chamber</p>
+        <h3 style="font-size: 2rem; margin-top: 0.75rem;">Five seats, not fourteen</h3>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 1rem; max-width: 42rem; line-height: 1.625;">
+          L_τ = {MLP, Head, Multi-head, Block, Transformer}. Five — not chosen to match a paper,
+          only noticed after the files were named. Click a seat.
+        </p>
+
+        <div id="piece-buttons" class="seats-grid"></div>
+
+        <article class="card" style="margin-top: 1rem;">
+          <p id="piece-formula" class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word;"></p>
+          <p id="piece-note" class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;"></p>
+          <pre id="piece-code" class="code-pre"></pre>
+        </article>
+      </div>
+
+      <!-- Hardware GPU Matrix -->
+      <div class="container" style="padding-bottom: 4rem;">
+        <p class="eyebrow">Hardware</p>
+        <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">Which GPUs hold τ</h3>
+        <div class="table-wrapper">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>GPU</th>
+                <th>Memory</th>
+                <th>13M</th>
+                <th>~2B</th>
+                <th>Practical max</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="text-fg">NVIDIA A100</td><td class="font-mono text-muted">40 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✔</td><td class="font-mono text-muted">~6B–8B</td></tr>
+              <tr><td class="text-fg">NVIDIA V100</td><td class="font-mono text-muted">16 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✘</td><td class="font-mono text-muted">~2B</td></tr>
+              <tr><td class="text-fg">NVIDIA RTX 4090</td><td class="font-mono text-muted">24 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✔</td><td class="font-mono text-muted">~4B</td></tr>
+              <tr><td class="text-fg">NVIDIA RTX 5090</td><td class="font-mono text-muted">32 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✔</td><td class="font-mono text-muted">13M verified</td></tr>
+              <tr><td class="text-fg">NVIDIA RTX 3090</td><td class="font-mono text-muted">24 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✔</td><td class="font-mono text-muted">~3.5B–4B</td></tr>
+              <tr><td class="text-fg">NVIDIA RTX 4080</td><td class="font-mono text-muted">16 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✘</td><td class="font-mono text-muted">~2B</td></tr>
+              <tr><td class="text-fg">NVIDIA RTX 4060</td><td class="font-mono text-muted">8 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✘</td><td class="font-mono text-muted">~1B</td></tr>
+              <tr><td class="text-fg">Tesla T4</td><td class="font-mono text-muted">16 GB</td><td class="font-mono text-mark">✔</td><td class="font-mono text-muted">✘</td><td class="font-mono text-muted">~1.5B–2B</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-subtle" style="font-size: 0.75rem; margin-top: 1rem; line-height: 1.5;">
+          A free Colab or Kaggle T4 is enough for 13 million parameters. A billion-parameter run is
+          not. Flags <span class="text-fg">--amp</span>, <span class="text-fg">--grad-checkpointing</span>,
+          <span class="text-fg">--grad-accum</span> bring memory down when a large config refuses.
+        </p>
+      </div>
+    </section>
+
+    <!-- Loss Section -->
+    <section id="loss" class="site-section">
+      <div class="container section-grid">
+        <div>
+          <p class="eyebrow">Unique sink of pretraining</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em; margin-top: 0.75rem;">Next-token loss</h2>
+          <p class="text-muted" style="margin-top: 1.25rem; line-height: 1.625;">
+            Every orbit of raw text reaches the same objective. Write the next token, grade the
+            logits, descend. The 77 million parameter run in the README is the exhibited orbit:
+            11.14 → 3.73 train, 3.76 on the held-out slice, in 2 000 steps.
+          </p>
+          <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 1rem;">
+            L = CE(softmax(z), y<sub>t+1</sub>)
+          </p>
+          <p class="text-subtle" style="font-size: 0.875rem; margin-top: 1rem; line-height: 1.5;">
+            T2. Independently checked in the training logs. The curve here is a reading of those two
+            endpoints, not a re-run.
+          </p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Orbit · 77M</p>
+            <p id="loss-step-label" class="font-mono text-muted tabular-nums" style="font-size: 0.75rem;"></p>
+          </div>
+          <p id="loss-train-val" class="font-display tabular-nums text-fg" style="font-size: 3rem; margin-top: 1rem; line-height: 1;"></p>
+          <p id="loss-dev-val" class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;"></p>
+
+          <label for="loss-slider" class="field-label" style="margin-top: 1.5rem;">
+            Training step
+          </label>
+          <input type="range" id="loss-slider" class="range-slider" min="0" max="2000" step="10" value="2000">
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.25rem;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-subtle); margin-bottom: 0.25rem;">
+                <span>train</span>
+                <span class="font-mono tabular-nums">0.00 → 11.20</span>
+              </div>
+              <div class="loss-bar"><span id="loss-train-bar"></span></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-subtle); margin-bottom: 0.25rem;">
+                <span>dev</span>
+                <span class="font-mono tabular-nums">0.00 → 11.20</span>
+              </div>
+              <div class="loss-bar"><span id="loss-dev-bar"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Generation Section -->
+      <div class="container" style="padding-bottom: 4rem;">
+        <p class="eyebrow">Where the small end starts</p>
+        <h3 style="font-size: 2rem; margin-top: 0.75rem;">Generate</h3>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 1rem; max-width: 42rem; line-height: 1.625;">
+          Below is the output of a trained 13 million parameter LLM, just so you can see where the
+          small end of this starts — and how SFT then GRPO change the mouth of the same net.
+        </p>
+
+        <div id="stage-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem;"></div>
+        <div id="prompt-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;"></div>
+
+        <div style="display: grid; gap: 1rem; margin-top: 1.25rem;">
+          <article class="card">
+            <p id="stage-prompt-title" class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;"></p>
+            <p id="stage-prompt-text" class="text-fg" style="font-size: 0.875rem; margin-top: 0.75rem;"></p>
+            <pre id="generated-reply" class="font-mono text-muted" style="margin-top: 1rem; font-size: 0.875rem; line-height: 1.6; white-space: pre-wrap;"></pre>
+          </article>
+          <div style="display: flex;">
+            <button type="button" id="sample-btn" class="btn-primary">Sample again</button>
+            <span id="sample-badge" class="font-mono text-subtle" style="display: none; height: 2.75rem; align-items: center; padding: 0 1rem; font-size: 0.75rem; box-shadow: var(--shadow-border); border-radius: 0.375rem;">
+              Curated checkpoint reply
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Align Section -->
+    <section id="align" class="site-section">
+      <div class="container" style="padding-top: 4rem; padding-bottom: 3rem;">
+        <p class="eyebrow">Post-training</p>
+        <h2 style="font-size: 2.5rem; letter-spacing: -0.03em; margin-top: 0.75rem;">Turning a base into an assistant</h2>
+        <p class="text-muted" style="margin-top: 1.25rem; max-width: 42rem; line-height: 1.625;">
+          After the sink of pretraining, the data changes and the loss changes. The net does not.
+          Five methods, all handwritten, all on the same small Transformer.
+        </p>
+
+        <div class="methods-grid">
+          <article class="card">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">SFT</p>
+            <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">Supervised fine-tune</h3>
+            <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 0.75rem; word-break: break-word;">ce = CE(logits, y) * mask; return ce.sum() / mask.sum()</p>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Instruction data (Alpaca, Dolly, GSM8K). Train only on assistant tokens. The base model learns to answer instead of to continue the internet.</p>
+          </article>
+          <article class="card">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">RM</p>
+            <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">Reward model</h3>
+            <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 0.75rem; word-break: break-word;">−log σ(r(chosen) − r(rejected))</p>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Bradley-Terry on preference pairs. Test accuracy in the README: 0.574 on 7 974 pairs. Weak, and enough to point PPO.</p>
+          </article>
+          <article class="card">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">DPO</p>
+            <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">DPO / ORPO / KTO</h3>
+            <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 0.75rem; word-break: break-word;">−log σ(β (π log-ratio − π_ref log-ratio))</p>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Preference without sampling from a reward model. ORPO drops the reference. KTO takes unpaired thumbs.</p>
+          </article>
+          <article class="card">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">PPO</p>
+            <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">PPO</h3>
+            <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 0.75rem; word-break: break-word;">−min(ratio A, clip(ratio) A) with GAE</p>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Classic RLHF. Value head on the same backbone. Reward from the RM or from a verifier.</p>
+          </article>
+          <article class="card">
+            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">GRPO</p>
+            <h3 style="font-size: 1.5rem; margin-top: 0.75rem;">GRPO / RLVR</h3>
+            <p class="font-mono text-fg" style="font-size: 0.875rem; margin-top: 0.75rem; word-break: break-word;">A = (r − mean_G) / (std_G + ε)</p>
+            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Group of answers, relative advantage, no value head. The sink of the post-training line when the task can be checked.</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Theorems T1–T9 -->
+      <div class="container theorems-layout">
+        <div>
+          <p class="eyebrow">Theorems</p>
+          <h3 style="font-size: 2rem; margin-top: 0.75rem;">T1–T9</h3>
+          <ol id="theorems-list" style="margin-top: 1.5rem; list-style: none; display: flex; flex-direction: column; gap: 0.25rem;"></ol>
+        </div>
+        <article class="card">
+          <p id="theorem-id" class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;"></p>
+          <h4 id="theorem-title" style="font-size: 1.5rem; margin-top: 0.75rem;"></h4>
+          <p id="theorem-body" class="text-muted" style="margin-top: 1rem; line-height: 1.625; font-size: 1rem;"></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Eval Section -->
+    <section id="eval" class="site-section">
+      <div class="container section-grid">
+        <div>
+          <p class="eyebrow">The evaluation</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em; margin-top: 0.75rem;">GSM8K greedy</h2>
+          <p class="text-muted" style="margin-top: 1.25rem; line-height: 1.625;">
+            T8. Generate greedily, parse the <span class="font-mono text-fg">&lt;answer&gt;</span> tag,
+            compare to gold. That is the whole metric.
+            <span class="font-mono text-fg">scripts/eval_post_training.py</span> prints one table
+            across Base, SFT, DPO, PPO, and GRPO so the stages can be read as a single experiment.
+          </p>
+          <p class="text-subtle" style="font-size: 0.875rem; margin-top: 1rem; line-height: 1.5;">
+            The box on the right is the parser, not a model. Type a completion, including a tag or a
+            bare number, and see whether the sink accepts it.
+          </p>
+        </div>
+
+        <form id="gsm8k-form" class="card">
+          <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">C1 · Problem</p>
+          <p class="text-fg" style="font-size: 0.875rem; line-height: 1.6; margin-top: 0.75rem;">
+            Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
+          </p>
+          <p class="text-subtle" style="font-size: 0.75rem; margin-top: 0.75rem; line-height: 1.5;">
+            April: 48. May: 48 / 2 = 24. Total: 48 + 24 = 72.
+          </p>
+
+          <label for="completion-input" class="field-label" style="margin-top: 1.25rem;">
+            Completion
+          </label>
+          <textarea id="completion-input" rows="4" class="text-area">&lt;answer&gt;72&lt;/answer&gt;</textarea>
+
+          <div class="btn-group" style="margin-top: 1rem;">
+            <button type="submit" class="btn-primary">Evaluate</button>
+            <button type="button" id="btn-gold" class="btn-secondary">Gold</button>
+            <button type="button" id="btn-miss" class="btn-secondary">Miss</button>
+          </div>
+
+          <dl id="eval-results" class="stat-dl" style="display: none;">
+            <div class="stat-row">
+              <dt class="text-muted">Parsed</dt>
+              <dd id="eval-parsed" class="font-mono text-fg"></dd>
+            </div>
+            <div class="stat-row">
+              <dt class="text-muted">Gold</dt>
+              <dd class="font-mono text-fg">72</dd>
+            </div>
+            <div class="stat-row">
+              <dt class="text-muted">Verdict</dt>
+              <dd id="eval-verdict" class="font-mono"></dd>
+            </div>
+          </dl>
+        </form>
+      </div>
+    </section>
+
+    <!-- Name Section -->
+    <section id="name" class="site-section">
+      <div class="container section-grid">
+        <div>
+          <p class="eyebrow">Fit, not force</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em; margin-top: 0.75rem;">The name</h2>
+          <p class="text-muted" style="margin-top: 1.25rem; line-height: 1.625;">
+            A substitution test shows that T1–T9 do not print the phrase “from scratch.” Replace it
+            with any wrapper — Hugging Face transformers, trl, peft — and every sum of the
+            handwritten modules still compiles. That test is valid and small. It shows only that
+            arithmetic of tensors does not output a title.
+          </p>
+          <p class="text-muted" style="margin-top: 1rem; line-height: 1.625;">
+            It does not show that every title fits τ equally. “From scratch,” in the inherited
+            sense, already carries content: one net, built of small files, trained on public data,
+            aligned by losses you can read. τ exhibits a single architecture, a first triad of
+            stages, and a unique sink for what those stages generate.
+          </p>
+          <p class="text-muted" style="margin-top: 1rem; line-height: 1.625;">
+            This is a semantic argument, not a tenth evaluation of CE. It stands or falls on whether
+            MLP, Head, and Block carry the structural role claimed for them. The README should not
+            present it as a theorem. It is the name of the path.
+          </p>
+        </div>
+
+        <aside class="card">
+          <p class="font-display italic text-fg" style="font-size: 1.5rem; line-height: 1.3;">
+            τ = (MLP, Head, Blockᴺ, CE, SFT → {DPO, PPO, GRPO})
+          </p>
+          <p class="text-muted" style="font-size: 0.875rem; margin-top: 1.25rem; line-height: 1.6;">
+            From-scratch, in this reading, names τ. Existence as a hosted billion-parameter service
+            is not a line of this map. Existence as form is.
+          </p>
+
+          <dl class="stat-dl">
+            <div style="display: flex; gap: 1rem;">
+              <dt class="text-fg" style="width: 6rem; flex-shrink: 0; font-weight: 500;">Proved</dt>
+              <dd class="text-muted">T1–T9, the formula, the CE barrier, unique sink at chat</dd>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <dt class="text-fg" style="width: 6rem; flex-shrink: 0; font-weight: 500;">Stipulated</dt>
+              <dd class="text-muted">r50k_base, ReLU not GELU, untied lm_head, pre-norm</dd>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <dt class="text-fg" style="width: 6rem; flex-shrink: 0; font-weight: 500;">Fit</dt>
+              <dd class="text-muted">The name from-scratch, pedagogical</dd>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <dt class="text-fg" style="width: 6rem; flex-shrink: 0; font-weight: 500;">Evidence</dt>
+              <dd class="text-muted">13M / 77M / 406M; GSM8K table; RM accuracy 0.574; Attention is All You Need</dd>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <dt class="text-fg" style="width: 6rem; flex-shrink: 0; font-weight: 500;">Refused</dt>
+              <dd class="text-muted">transformers, trl, peft; proof of a product</dd>
+            </div>
+          </dl>
+
+          <p class="text-muted" style="margin-top: 1.5rem; font-size: 0.875rem;">
+            Source: <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">NotHarshhaa/how-to-train-llm-from-scratch</a>
+            <span class="text-subtle"> · </span>
+            <a href="https://notharshhaa.github.io/how-to-train-llm-from-scratch/" target="_blank" rel="noopener noreferrer" class="footer-link">Docs</a>
+            <span class="text-subtle"> · </span>
+            <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener noreferrer" class="footer-link">Vaswani et al.</a>
+            <span class="text-subtle"> · </span>
+            <a href="https://github.com/NotHarshhaa" target="_blank" rel="noopener noreferrer" class="footer-link">NotHarshhaa</a>
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Repo Section -->
+    <section id="repo" class="site-section">
+      <div class="container section-grid">
+        <div>
+          <p class="eyebrow">The sink amount</p>
+          <h2 style="font-size: 2.5rem; letter-spacing: -0.03em; margin-top: 0.75rem;">The repository</h2>
+          <p class="text-muted" style="margin-top: 1.25rem; line-height: 1.625;">
+            Twelve was the unique sink of An. Chat is the unique sink of τ. The asked gift is the
+            same number the README already asks: clone the repo, run the smoke configs, read the
+            files. Stars are optional. The MIT license is not.
+          </p>
+          <div class="btn-group" style="margin-top: 1.5rem;">
+            <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="btn-primary" style="flex: 1;">
+              Open the GitHub repo
+            </a>
+            <a href="https://notharshhaa.github.io/how-to-train-llm-from-scratch/" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="flex: 1;">
+              Read the docs
+            </a>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <p class="font-display tabular-nums text-fg" style="font-size: 3rem; line-height: 1;">9.6k</p>
+          <p class="text-muted" style="font-size: 0.875rem;">stars · 1.3k forks · MIT</p>
+
+          <!-- Setup -->
+          <div class="copy-block">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Setup</p>
+              <button type="button" class="copy-btn" data-code="git clone https://github.com/NotHarshhaa/how-to-train-llm-from-scratch.git&#10;cd how-to-train-llm-from-scratch&#10;pip install -e .">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+              </button>
+            </div>
+            <pre class="copy-pre">git clone https://github.com/NotHarshhaa/how-to-train-llm-from-scratch.git
+cd how-to-train-llm-from-scratch
+pip install -e .</pre>
+          </div>
+
+          <!-- Extras -->
+          <div class="copy-block">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Extras</p>
+              <button type="button" class="copy-btn" data-code="pip install -e &quot;.[train]&quot;   # datasets + wandb&#10;pip install -e &quot;.[ui]&quot;      # streamlit control panel&#10;pip install -e &quot;.[docs]&quot;    # mkdocs&#10;pip install -e &quot;.[all]&quot;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+              </button>
+            </div>
+            <pre class="copy-pre">pip install -e ".[train]"   # datasets + wandb
+pip install -e ".[ui]"      # streamlit control panel
+pip install -e ".[docs]"    # mkdocs
+pip install -e ".[all]"</pre>
+          </div>
+
+          <!-- Run -->
+          <div class="copy-block">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.18em;">Run the line</p>
+              <button type="button" class="copy-btn" data-code="NPROC=1 bash scripts/run_posttraining.sh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+              </button>
+            </div>
+            <pre class="copy-pre">NPROC=1 bash scripts/run_posttraining.sh</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <p class="font-display italic text-fg" style="font-size: 1.5rem;">τ</p>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; max-width: 28rem; line-height: 1.6;">
+          Training an LLM from scratch — an interactive reading of the repository. A
+          defined path code can certify, and a name fitted rather than free.
+        </p>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 1rem;">
+          Source: <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">how-to-train-llm-from-scratch</a>
+          <span class="text-subtle"> · </span>
+          <a href="https://notharshhaa.github.io/how-to-train-llm-from-scratch/" target="_blank" rel="noopener noreferrer" class="footer-link">Docs</a>
+          <span class="text-subtle"> · </span>
+          <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener noreferrer" class="footer-link">Attention is All You Need</a>
+        </p>
+        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.25rem;">
+          Author / Maintainer: <a href="https://github.com/NotHarshhaa" target="_blank" rel="noopener noreferrer" class="footer-link">NotHarshhaa</a>
+        </p>
+      </div>
+      <p class="text-subtle" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+        Form, not product. Occupied, not wrapped.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
