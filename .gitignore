@@ -1,5 +1,7 @@
 node_modules/
-.project_id
-.github_repo
+dist/
+.output/
 .env
 .env.*
+.DS_Store
+Thumbs.db

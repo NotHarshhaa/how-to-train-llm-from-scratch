@@ -182,13 +182,19 @@ export function LossSection() {
               {generated ?? pair.reply}
             </pre>
           </article>
-          <button
-            type="button"
-            onClick={runGenerate}
-            className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg transition-[scale,background-color] duration-150 ease-out hover:bg-fg active:scale-[0.96]"
-          >
-            Sample again
-          </button>
+          {stage === "base" ? (
+            <button
+              type="button"
+              onClick={runGenerate}
+              className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-medium text-accent-fg transition-[scale,background-color] duration-150 ease-out hover:bg-fg active:scale-[0.96]"
+            >
+              Sample again
+            </button>
+          ) : (
+            <span className="inline-flex h-11 items-center justify-center rounded-md px-4 text-xs font-mono text-subtle shadow-[var(--shadow-border)]">
+              Curated checkpoint reply
+            </span>
+          )}
         </div>
       </div>
     </section>

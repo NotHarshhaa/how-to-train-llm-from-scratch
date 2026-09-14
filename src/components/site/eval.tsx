@@ -12,10 +12,14 @@ const PROBLEM = {
 
 function parseAnswer(raw: string): string | null {
   const tagged = raw.match(/<answer>\s*([^<]+?)\s*<\/answer>/i);
-  if (tagged) return tagged[1].trim();
+  if (tagged) {
+    const inside = tagged[1].trim();
+    const cleaned = inside.replace(/[.,;:]+$/, "").trim();
+    return cleaned || inside;
+  }
   const last = raw.trim().split(/\s+/).at(-1);
   if (!last) return null;
-  const num = last.replace(/[^0-9.-]/g, "");
+  const num = last.replace(/[^0-9.-]/g, "").replace(/[.-]+$/, "");
   return num || last;
 }
 

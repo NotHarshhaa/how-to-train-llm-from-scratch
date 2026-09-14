@@ -257,8 +257,10 @@ function NumberField({
         step={step}
         value={value}
         onChange={(e) => {
-          const v = Number(e.target.value);
-          if (Number.isFinite(v)) onChange(v);
+          const raw = e.target.value;
+          if (raw === "") return;
+          const v = Number(raw);
+          if (Number.isFinite(v) && v >= 0) onChange(v);
         }}
         className="h-11 w-full rounded-md bg-elevated px-3 font-mono text-base text-fg tabular-nums shadow-[var(--shadow-border)] outline-none focus-visible:ring-2 focus-visible:ring-ring/70"
       />
