@@ -2,6 +2,12 @@
 
 An interactive, zero-dependency educational website for [NotHarshhaa/how-to-train-llm-from-scratch](https://github.com/NotHarshhaa/how-to-train-llm-from-scratch) explaining the from-scratch journey from raw text, tokenization, architecture, and next-token cross-entropy loss to SFT, RM, DPO, PPO, and GRPO.
 
+## Credits & Acknowledgements
+This site is completely based on the incredible repository and work by **Fareed Khan**:
+👉 **[https://github.com/FareedKhan-dev/train-llm-from-scratch](https://github.com/FareedKhan-dev/train-llm-from-scratch)**
+
+All core architectural breakdowns, mathematical equations, loss data endpoints, and training methodologies are derived from Fareed Khan's original project.
+
 ## Features
 - **The Source-Line**: Step-through interactive pipeline stepper walking through the 11 stages from raw text to chat.
 - **Live Tokenizer**: Split text with the GPT-2 BPE regex and inspect stand-in token IDs.
@@ -12,21 +18,5 @@ An interactive, zero-dependency educational website for [NotHarshhaa/how-to-trai
 - **GSM8K Evaluator**: Greedy answer parser with `<answer>` tag detection and gold validation.
 - **Fast & Zero-Dependency**: Written entirely in pure HTML5, CSS3, and modern Vanilla JavaScript. Zero build step, zero Node.js runtime required.
 
-## GitHub Pages Deployment
-
-This repository is ready to deploy directly to GitHub Pages with zero configuration:
-
-1. Push this repository to GitHub:
-   ```bash
-   git add .
-   git commit -m "Update site URLs and static assets"
-   git push origin main
-   ```
-2. Go to your repository **Settings** → **Pages**.
-3. Under **Build and deployment**:
-   - **Source**: Select `Deploy from a branch`.
-   - **Branch**: Select `main` (or your default branch) and `/ (root)`.
-4. Click **Save**.
-
-Your site will be live at:
+## Live Site
 👉 **[https://notharshhaa.github.io/how-to-train-llm-from-scratch/](https://notharshhaa.github.io/how-to-train-llm-from-scratch/)**
