@@ -246,7 +246,39 @@ document.addEventListener("DOMContentLoaded", () => {
   initTheorems();
   initEvalSection();
   initCopyBlocks();
+  initScrollSpy();
 });
+
+// ScrollSpy Navigation Indicator
+function initScrollSpy() {
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(".site-nav .nav-link");
+  if (!sections.length || !navLinks.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute("id");
+          navLinks.forEach((link) => {
+            const href = link.getAttribute("href");
+            if (href === `#${id}`) {
+              link.classList.add("active");
+            } else {
+              link.classList.remove("active");
+            }
+          });
+        }
+      });
+    },
+    {
+      rootMargin: "-20% 0px -65% 0px",
+      threshold: 0,
+    }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+}
 
 // 1. Pipeline Stepper
 function initPipeline() {
