@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Train LLM From Scratch</title>
+  <title>Train LLM From Scratch — An Interactive Reading of τ</title>
   <meta name="description" content="τ — training an LLM from scratch: one Transformer, a first loss, a source-line of stages, and a unique sink at chat.">
   <meta name="theme-color" content="#fbfaf8">
 
@@ -19,17 +19,20 @@
   <!-- Typography: Preconnect & Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-progress" class="scroll-progress" aria-hidden="true"></div>
+
   <!-- Sticky Header -->
   <header class="site-header">
     <div class="container header-inner">
-      <a href="#top" class="logo">
+      <a href="#top" class="logo" aria-label="Back to top">
         <span class="logo-tau">τ</span>
         <span class="logo-text">From Scratch</span>
       </a>
@@ -53,39 +56,43 @@
         <div class="section-tag-group">
           <span class="section-badge badge-accent">τ ARCHITECTURE</span>
           <span class="section-badge">PURE PYTORCH</span>
+          <span class="section-badge">7 STAGES</span>
         </div>
         <h1 class="hero-title">
-          Training an LLM from <span class="italic">scratch</span>
+          Training an LLM <br>from <span class="italic">scratch</span><span class="text-mark">.</span>
         </h1>
         <p class="hero-text">
-          Code proves a path, not a product. An interactive guide through the complete handwritten PyTorch transformer pipeline: one architecture, cross-entropy pre-training, SFT instruction-tuning, and RL alignment (PPO, DPO, GRPO) to interactive chat.
+          Code proves a path, not a product. An interactive reading of the complete handwritten
+          PyTorch transformer pipeline — one architecture, cross-entropy pre-training,
+          SFT instruction-tuning, and RL alignment (PPO, DPO, GRPO) — all the way to interactive chat.
+          Seven stages, five source files, nine theorems, one sink.
         </p>
         <div class="btn-group">
           <a href="#path" class="btn-primary">Walk the source-line</a>
-          <a href="#model" class="btn-secondary">Compute τ(d)</a>
+          <a href="#model" class="btn-secondary">Compute τ(d, N, T, V)</a>
         </div>
         <p class="hero-pipeline-preview">
           <span>raw text</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>tokens</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>Transformer</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>CE loss</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>base</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>SFT</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>RM</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>DPO</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>PPO</span>
-          <span class="text-subtle/50"> → </span>
+          <span class="arrow">→</span>
           <span>GRPO</span>
-          <span class="text-subtle/50"> → </span>
-          <span>chat<sup class="text-mark">∞</sup></span>
+          <span class="arrow">→</span>
+          <span class="text-mark">chat<sup>∞</sup></span>
         </p>
       </div>
     </section>
@@ -99,26 +106,44 @@
         </div>
         <h2 class="section-title">The Source-Line Pipeline</h2>
         <p class="section-subtitle">
-          The whole journey is one concept repeated: turn raw text into integers, predict the next token with causal masking, then refine data and loss objectives through SFT, DPO, and GRPO until the model converges on chat.
+          The whole journey is one concept repeated: turn raw text into integers, predict the next token with
+          causal masking, then refine data and loss objectives through SFT, DPO, and GRPO until the model
+          converges on chat. Each stage transforms either the data distribution or the loss function —
+          the underlying Transformer weights and topology remain strictly identical.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">Stage Progression</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">From The Pile to Aligned Chat</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            Every stage in this repository is implemented in pure PyTorch without external wrappers like Hugging Face transformers, trl, or peft.
+        <div class="section-narrative">
+          <p class="eyebrow">Stage Progression <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">From The Pile to Aligned Chat</h3>
+          <p class="text-muted">
+            Every stage in this repository is implemented in pure PyTorch — no external wrappers like
+            Hugging Face <span class="font-mono text-fg">transformers</span>,
+            <span class="font-mono text-fg">trl</span>, or
+            <span class="font-mono text-fg">peft</span>. The repo's central claim is that the
+            entire LLM lifecycle can be expressed as a single linear substitution τ.
           </p>
-          <p class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word; background-color: var(--color-elevated); padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(24, 22, 20, 0.08);">
+          <p class="font-mono mono-block">
             τ : text → tokens → Transformer → CE → base → SFT → {PPO, DPO} → GRPO → chat
           </p>
-          <div class="btn-group" style="margin-top: 0.5rem;">
+          <p class="text-muted">
+            Substitution is the rigorous move: any library that wraps these primitives
+            computes the same matrix multiplications underneath. What changes between
+            stages is <em>what</em> the loss sees, never <em>how</em> the model parameterises it.
+          </p>
+          <div class="btn-group">
             <button type="button" id="walk-btn" class="btn-primary">Walk the source-line</button>
             <button type="button" id="reset-walk-btn" class="btn-secondary">Reset</button>
           </div>
           <div class="callout-box">
-            <strong>Key takeaway:</strong> Notice how each downstream stage changes the data distribution or loss formulation, while the underlying Transformer backbone weights and topology remain strictly identical.
+            <strong class="callout-title">Why it matters</strong>
+            <p>
+              Notice how each downstream stage changes only the data distribution or the loss
+              formulation, while the underlying Transformer backbone weights and topology remain
+              strictly identical. This is the architectural invariant that makes
+              <em>from-scratch</em> a meaningful claim rather than a marketing one.
+            </p>
           </div>
         </div>
 
@@ -127,12 +152,12 @@
             <div class="card-title-group">
               <span class="card-type-pill">Interactive Stepper</span>
             </div>
-            <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;">11 Stages</p>
+            <p class="font-mono text-subtle uppercase small-label">11 Stages</p>
           </div>
           <ol id="pipeline-list" class="pipeline-list"></ol>
-          <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(24, 22, 20, 0.08);">
-            <p id="pipeline-current-label" class="font-display italic text-fg" style="font-size: 1.5rem;"></p>
-            <p id="pipeline-current-hint" class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.6;"></p>
+          <div class="pipeline-detail">
+            <p id="pipeline-current-label" class="font-display italic text-fg detail-title"></p>
+            <p id="pipeline-current-hint" class="text-muted detail-hint"></p>
           </div>
         </aside>
       </div>
@@ -142,20 +167,30 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Live Playground</span>
-              <h3 style="font-size: 1.5rem; margin-top: 0.35rem;">Byte-Pair Tokenizer (BPE) Splitter</h3>
+              <h3 class="card-title">Byte-Pair Tokenizer (BPE) Splitter</h3>
             </div>
-            <p id="tok-count" class="font-mono text-subtle" style="font-size: 0.75rem;"></p>
+            <p id="tok-count" class="font-mono text-subtle small-label"></p>
           </div>
 
-          <label for="tok-input" class="field-label">
-            Input Raw Text
-          </label>
+          <label for="tok-input" class="field-label">Input Raw Text</label>
           <textarea id="tok-input" rows="3" class="text-area">Attention is all you need to train an LLM from scratch.</textarea>
-          <p class="text-subtle" style="font-size: 0.75rem; margin-top: 0.5rem; line-height: 1.5;">
-            The repo uses tiktoken <span class="text-fg font-mono">r50k_base</span> (50 257 tokens, padded to 50 304 for GPU tensor core alignment). This live playground splits text using GPT-2 regex rules and hashes pieces into simulated IDs.
+          <p class="text-subtle field-hint">
+            The repo uses tiktoken <span class="text-fg font-mono">r50k_base</span>
+            (50&nbsp;257 tokens, padded to 50&nbsp;304 for GPU tensor-core alignment).
+            This live playground splits text using GPT-2 regex rules and hashes pieces into simulated IDs.
           </p>
 
-          <div id="tokens-container" style="display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 1.25rem;"></div>
+          <div id="tokens-container" class="tokens-container"></div>
+
+          <div class="bpe-explainer">
+            <p class="eyebrow">How BPE Works <span class="eyebrow-rule"></span></p>
+            <ol class="bpe-steps">
+              <li><span class="font-mono text-mark">01</span> Split text on GPT-2 regex: <span class="font-mono">'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+</span></li>
+              <li><span class="font-mono text-mark">02</span> Each chunk becomes a sequence of UTF-8 bytes.</li>
+              <li><span class="font-mono text-mark">03</span> Merge the most frequent adjacent byte-pair repeatedly until vocabulary is full.</li>
+              <li><span class="font-mono text-mark">04</span> Final merged sequences are the tokens — stored as integer IDs.</li>
+            </ol>
+          </div>
         </div>
       </div>
     </section>
@@ -169,25 +204,47 @@
         </div>
         <h2 class="section-title">Transformer Anatomy &amp; Parameter Math</h2>
         <p class="section-subtitle">
-          A clean decoder-only causal Transformer written in raw PyTorch. Inspect the exact linear algebra parameter formula, test custom configurations (from 13M to 3B+), view the five modular source files, and budget GPU VRAM requirements.
+          A clean decoder-only causal Transformer written in raw PyTorch. Inspect the exact closed-form
+          parameter formula, test custom configurations from 13M to 3B+, view the five modular source files,
+          visualise how parameters distribute across components, and budget GPU VRAM requirements.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">Closed-Form Parameter Math</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">Analeza: Analytical Parameter Counting</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            Write the model as token and positional embeddings, plus N identical transformer blocks split into Multi-Head Attention and MLP sub-layers. Summing every weight tensor yields a single closed-form formula for total parameters:
+        <div class="section-narrative">
+          <p class="eyebrow">Closed-Form Parameter Math <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">Analytical Parameter Counting</h3>
+          <p class="text-muted">
+            Write the model as token and positional embeddings, plus N identical transformer blocks split
+            into Multi-Head Attention and MLP sub-layers. Summing every weight tensor yields a single
+            closed-form formula for total parameters:
           </p>
-          <p class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word; background-color: var(--color-surface); padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(24, 22, 20, 0.08); box-shadow: var(--shadow-border);">
+          <p class="font-mono mono-block mono-block-accent">
             τ(d, N, T, V) = Vd + Td + N(12d² + 10d) + 2d + Vd + V
           </p>
-          <p class="text-subtle" style="font-size: 0.75rem; line-height: 1.5;">
-            Where <span class="font-mono text-fg">d</span> = embedding dimension, <span class="font-mono text-fg">N</span> = layer blocks, <span class="font-mono text-fg">T</span> = context length (256–2048), and <span class="font-mono text-fg">V</span> = vocabulary size (50 304). Untied LM projection head.
+          <p class="text-subtle field-hint">
+            Where <span class="font-mono text-fg">d</span> = embedding dimension,
+            <span class="font-mono text-fg">N</span> = layer blocks,
+            <span class="font-mono text-fg">T</span> = context length (256–2048), and
+            <span class="font-mono text-fg">V</span> = vocabulary size (50&nbsp;304).
+            Untied LM projection head.
+          </p>
+          <p class="text-muted">
+            The formula decomposes cleanly: <span class="font-mono text-fg">Vd</span> for token embeddings,
+            <span class="font-mono text-fg">Td</span> for positional embeddings,
+            <span class="font-mono text-fg">N(12d² + 10d)</span> for the N transformer blocks
+            (each containing QKV projections, output projection, two MLP layers, and three LayerNorms),
+            <span class="font-mono text-fg">2d</span> for the final LayerNorm, and
+            <span class="font-mono text-fg">Vd + V</span> for the untied LM head with bias.
           </p>
           <div class="callout-box">
-            <strong>Did you know?</strong> In standard causal LLMs, the feedforward MLP uses an intermediate expansion of 4× embedding dimension (<span class="font-mono">4d</span>), accounting for ~66% of total block parameters.
+            <strong class="callout-title">Did you know?</strong>
+            <p>
+              In standard causal LLMs, the feedforward MLP uses an intermediate expansion of 4× embedding
+              dimension (<span class="font-mono">4d</span>), accounting for ~66% of total block parameters.
+              This is why most "shrinking" research targets the MLP — replacing it with SwiGLU, MoE, or
+              low-rank adapters — while attention remains untouched.
+            </p>
           </div>
         </div>
 
@@ -195,19 +252,19 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Interactive Calculator</span>
-              <h4 style="font-size: 1.25rem; margin-top: 0.35rem;">Model Presets &amp; Custom Sizing</h4>
+              <h4 class="card-title-sm">Model Presets &amp; Custom Sizing</h4>
             </div>
           </div>
-          <div id="preset-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
+          <div id="preset-buttons" class="preset-row"></div>
 
           <div class="input-grid">
             <label class="field-label">
               Embedding Dimension (d)
-              <input type="number" id="input-nembed" class="field-input" min="64" max="2048" step="64" value="128">
+              <input type="number" id="input-nembed" class="field-input" min="64" max="4096" step="64" value="128">
             </label>
             <label class="field-label">
               Attention Heads (n_head)
-              <input type="number" id="input-nhead" class="field-input" min="1" max="32" step="1" value="8">
+              <input type="number" id="input-nhead" class="field-input" min="1" max="64" step="1" value="8">
             </label>
             <label class="field-label">
               Transformer Layers (N)
@@ -215,11 +272,11 @@
             </label>
             <label class="field-label">
               Context Length (T)
-              <input type="number" id="input-context" class="field-input" min="128" max="2048" step="128" value="256">
+              <input type="number" id="input-context" class="field-input" min="128" max="8192" step="128" value="256">
             </label>
           </div>
 
-          <p id="param-broken-msg" class="text-mark" style="display: none; font-size: 0.875rem; margin-top: 1rem;">
+          <p id="param-broken-msg" class="text-mark field-hint" style="display: none;">
             d must be divisible by n_head. Head size is d / n_head.
           </p>
 
@@ -236,7 +293,28 @@
               <dt class="text-muted">Per-Head Size (d / n_head)</dt>
               <dd id="param-headsize" class="font-mono tabular-nums text-fg"></dd>
             </div>
+            <div class="stat-row">
+              <dt class="text-muted">Estimated VRAM (fp32)</dt>
+              <dd id="param-vram" class="font-mono tabular-nums text-fg"></dd>
+            </div>
           </dl>
+
+          <!-- Parameter Breakdown Donut Chart -->
+          <div class="donut-panel">
+            <div class="card-header-bar" style="margin-bottom: 0.75rem;">
+              <span class="card-type-pill">Parameter Breakdown</span>
+              <p class="font-mono text-subtle small-label">live donut</p>
+            </div>
+            <div class="donut-layout">
+              <svg id="param-donut" viewBox="0 0 200 200" class="donut-svg" aria-hidden="true">
+                <circle cx="100" cy="100" r="80" fill="none" stroke="var(--color-elevated)" stroke-width="28"/>
+                <g id="donut-segments"></g>
+                <text x="100" y="92" text-anchor="middle" class="donut-center-num" id="donut-total">0</text>
+                <text x="100" y="112" text-anchor="middle" class="donut-center-lbl">parameters</text>
+              </svg>
+              <ul id="donut-legend" class="donut-legend"></ul>
+            </div>
+          </div>
         </form>
       </div>
 
@@ -246,21 +324,76 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Modular Architecture</span>
-              <h3 style="font-size: 1.75rem; margin-top: 0.35rem;">The Five PyTorch Building Blocks</h3>
+              <h3 class="card-title">The Five PyTorch Building Blocks</h3>
             </div>
-            <p class="font-mono text-subtle" style="font-size: 0.75rem;">src/models/*.py</p>
+            <p class="font-mono text-subtle small-label">src/models/*.py</p>
           </div>
-          <p class="text-muted" style="font-size: 0.875rem; max-width: 46rem; line-height: 1.625;">
-            The entire model architecture is decomposed into five clean, transparent modules. Click any module below to inspect its exact mathematical formulation, design rationale, and PyTorch implementation.
+          <p class="text-muted field-hint">
+            The entire model architecture is decomposed into five clean, transparent modules.
+            Click any module below to inspect its exact mathematical formulation, design rationale,
+            and PyTorch implementation.
           </p>
 
           <div id="piece-buttons" class="seats-grid"></div>
 
-          <article style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid rgba(24, 22, 20, 0.08);">
-            <p id="piece-formula" class="font-mono text-fg" style="font-size: 0.875rem; word-break: break-word; background-color: var(--color-surface); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid rgba(24, 22, 20, 0.08);"></p>
-            <p id="piece-note" class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;"></p>
+          <article class="piece-detail">
+            <p id="piece-formula" class="font-mono mono-block mono-block-accent"></p>
+            <p id="piece-note" class="text-muted field-hint"></p>
             <pre id="piece-code" class="code-pre"></pre>
           </article>
+        </div>
+      </div>
+
+      <!-- Attention Heatmap -->
+      <div class="container" style="padding-bottom: 3.5rem;">
+        <div class="card">
+          <div class="card-header-bar">
+            <div>
+              <span class="card-type-pill">Live Visualisation</span>
+              <h3 class="card-title">Causal Self-Attention Heatmap</h3>
+            </div>
+            <p class="font-mono text-subtle small-label">8 × 8 mask</p>
+          </div>
+          <p class="text-muted field-hint">
+            Each cell shows the attention weight from a query token (row) to a key token (column).
+            The lower-triangular causal mask forces every position to attend only to itself and preceding
+            positions. Switch heads to see how different heads learn different patterns.
+          </p>
+
+          <div class="attn-controls">
+            <span class="field-label-inline">Head</span>
+            <div id="attn-head-buttons" class="attn-head-row"></div>
+          </div>
+
+          <div class="attn-layout">
+            <div class="attn-grid-wrap">
+              <div id="attn-grid" class="attn-grid"></div>
+              <div class="attn-axis-row">
+                <span class="attn-corner"></span>
+                <div id="attn-x-labels" class="attn-labels"></div>
+              </div>
+              <div class="attn-axis-col">
+                <div id="attn-y-labels" class="attn-labels attn-labels-vert"></div>
+              </div>
+            </div>
+            <aside class="attn-legend">
+              <p class="eyebrow">Reading the Map <span class="eyebrow-rule"></span></p>
+              <p class="text-muted" style="font-size: 0.875rem; line-height: 1.6; margin-top: 0.5rem;">
+                Darker cells = stronger attention. The bottom rows attend broadly to the entire prefix;
+                upper rows attend only to the first few tokens. Heads in early layers tend to focus on
+                syntactic locality; later heads diffuse across the context.
+              </p>
+              <div class="attn-scale">
+                <span class="font-mono text-subtle small-label">weight</span>
+                <div class="attn-scale-bar"></div>
+                <div class="attn-scale-ticks">
+                  <span>0.0</span>
+                  <span>0.5</span>
+                  <span>1.0</span>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
 
@@ -270,9 +403,9 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Hardware Budgeting</span>
-              <h3 style="font-size: 1.5rem; margin-top: 0.35rem;">Which GPUs Can Train &amp; Run τ</h3>
+              <h3 class="card-title-sm">Which GPUs Can Train &amp; Run τ</h3>
             </div>
-            <p class="font-mono text-subtle" style="font-size: 0.75rem;">VRAM vs Model Size</p>
+            <p class="font-mono text-subtle small-label">VRAM vs Model Size</p>
           </div>
           <div class="table-wrapper">
             <table class="styled-table">
@@ -297,8 +430,15 @@
               </tbody>
             </table>
           </div>
-          <div class="callout-box" style="margin-top: 1.25rem;">
-            <strong>Memory Optimization:</strong> A free Google Colab or Kaggle T4 GPU (16 GB) runs the 13M and 77M models effortlessly. For larger runs, flags <span class="font-mono text-fg">--amp</span> (mixed precision), <span class="font-mono text-fg">--grad-checkpointing</span>, and <span class="font-mono text-fg">--grad-accum</span> dramatically reduce VRAM requirements.
+          <div class="callout-box">
+            <strong class="callout-title">Memory Optimisation</strong>
+            <p>
+              A free Google Colab or Kaggle T4 GPU (16 GB) runs the 13M and 77M models effortlessly.
+              For larger runs, flags <span class="font-mono text-fg">--amp</span> (mixed precision),
+              <span class="font-mono text-fg">--grad-checkpointing</span>, and
+              <span class="font-mono text-fg">--grad-accum</span> dramatically reduce VRAM requirements —
+              roughly by 2×, 1.5×, and linearly with the accumulation factor respectively.
+            </p>
           </div>
         </div>
       </div>
@@ -313,25 +453,62 @@
         </div>
         <h2 class="section-title">Next-Token Cross-Entropy Loss &amp; Inference</h2>
         <p class="section-subtitle">
-          Every epoch of pretraining optimizes the exact same objective: compute cross-entropy on next-token predictions, calculate backward gradients, and descend. Scrub the 77M training trajectory and inspect actual model generations across checkpoints.
+          Every epoch of pretraining optimises the exact same objective: compute cross-entropy on
+          next-token predictions, calculate backward gradients, and descend. Scrub the 77M training
+          trajectory on a real SVG line chart and inspect actual model generations across checkpoints.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">The Core Pretraining Objective</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">Causal Language Modeling Descent</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            During pretraining, tokens are processed autoregressively. Each position attends only to preceding tokens via the lower-triangular causal mask. The model predicts the probability distribution over all 50 304 vocabulary tokens:
+        <div class="section-narrative">
+          <p class="eyebrow">The Core Pretraining Objective <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">Causal Language Modelling Descent</h3>
+          <p class="text-muted">
+            During pretraining, tokens are processed autoregressively. Each position attends only to
+            preceding tokens via the lower-triangular causal mask. The model predicts a probability
+            distribution over all 50&nbsp;304 vocabulary tokens:
           </p>
-          <p class="font-mono text-fg" style="font-size: 0.875rem; background-color: var(--color-elevated); padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(24, 22, 20, 0.08);">
-            L = CrossEntropy(softmax(logits), y<sub>t+1</sub>)
+          <p class="font-mono mono-block">
+            L = −(1/T) Σ<sub>t=1..T</sub> log p(y<sub>t+1</sub> | x<sub>≤t</sub>)
           </p>
-          <p class="text-subtle" style="font-size: 0.875rem; line-height: 1.5;">
-            In the 77 million parameter training run on The Pile, loss drops rapidly from initial random entropy (11.14) down to 3.73 train (3.76 validation) over 2 000 steps.
+          <p class="text-muted">
+            Equivalently, in PyTorch:
+            <span class="font-mono text-fg">F.cross_entropy(logits, targets, ignore_index=−1)</span>.
+            The ignore index masks prompt tokens during SFT, but in pretraining every position contributes.
           </p>
+          <p class="text-muted">
+            In the 77 million parameter training run on The Pile, loss drops rapidly from initial random
+            entropy <span class="font-mono text-fg">(≈ ln 50304 = 10.83)</span> down to
+            <span class="font-mono text-fg">3.73</span> train (3.76 validation) over 2 000 steps —
+            a reduction of more than 7 nats per token.
+          </p>
+
+          <div class="metric-trio">
+            <div class="metric-card">
+              <p class="metric-label">Initial Loss</p>
+              <p class="metric-value font-mono">10.83</p>
+              <p class="metric-hint text-subtle">≈ ln(V), random init</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Final Train</p>
+              <p class="metric-value font-mono text-mark">3.73</p>
+              <p class="metric-hint text-subtle">2 000 steps</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Final Perplexity</p>
+              <p class="metric-value font-mono">41.7</p>
+              <p class="metric-hint text-subtle">e<sup>3.73</sup></p>
+            </div>
+          </div>
+
           <div class="callout-box">
-            <strong>Training insight:</strong> Cross-entropy loss of ~3.7 corresponds to a perplexity of ~40 on diverse internet text, enough for the model to learn grammar, spelling, facts, and code syntax from scratch.
+            <strong class="callout-title">Training Insight</strong>
+            <p>
+              Cross-entropy loss of ~3.7 corresponds to a perplexity of ~42 on diverse internet text —
+              enough for the model to learn grammar, spelling, facts, and code syntax from scratch.
+              Below ~3.5 the model starts to memorise the training set; below ~2.5 it has overfit
+              unless data was scaled proportionally (Chinchilla: 20 tokens per parameter).
+            </p>
           </div>
         </div>
 
@@ -339,36 +516,80 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Interactive Scrubber</span>
-              <h4 style="font-size: 1.25rem; margin-top: 0.35rem;">77M Model Training Trajectory</h4>
+              <h4 class="card-title-sm">77M Model Training Trajectory</h4>
             </div>
-            <p id="loss-step-label" class="font-mono text-muted tabular-nums" style="font-size: 0.75rem;"></p>
+            <p id="loss-step-label" class="font-mono text-muted tabular-nums small-label"></p>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.5rem;">
-            <span class="text-muted" style="font-size: 0.875rem;">Recorded Loss:</span>
-            <p id="loss-train-val" class="font-display tabular-nums text-fg" style="font-size: 2.75rem; line-height: 1;"></p>
+          <div class="loss-readout">
+            <div>
+              <span class="text-muted small-label">Train Loss</span>
+              <p id="loss-train-val" class="font-display tabular-nums text-fg loss-big-num"></p>
+            </div>
+            <div>
+              <span class="text-muted small-label">Val Loss</span>
+              <p id="loss-dev-val" class="font-display tabular-nums text-mark loss-big-num"></p>
+            </div>
+            <div>
+              <span class="text-muted small-label">Perplexity</span>
+              <p id="loss-ppl-val" class="font-display tabular-nums text-fg loss-big-num"></p>
+            </div>
           </div>
-          <p id="loss-dev-val" class="text-muted" style="font-size: 0.875rem; margin-top: 0.25rem; text-align: right;"></p>
 
-          <label for="loss-slider" class="field-label" style="margin-top: 1.5rem;">
-            Drag to scrub training steps (0 → 2 000):
-          </label>
+          <!-- SVG Line Chart -->
+          <div class="loss-chart-wrap">
+            <svg id="loss-chart" class="loss-chart" viewBox="0 0 480 240" preserveAspectRatio="none" aria-label="Training loss curve">
+              <!-- Axes -->
+              <line x1="36" y1="20" x2="36" y2="210" class="chart-axis"/>
+              <line x1="36" y1="210" x2="468" y2="210" class="chart-axis"/>
+              <!-- Grid lines -->
+              <g class="chart-grid">
+                <line x1="36" y1="60" x2="468" y2="60"/>
+                <line x1="36" y1="110" x2="468" y2="110"/>
+                <line x1="36" y1="160" x2="468" y2="160"/>
+              </g>
+              <!-- Y-axis labels -->
+              <text x="30" y="24" text-anchor="end" class="chart-label">11</text>
+              <text x="30" y="64" text-anchor="end" class="chart-label">8</text>
+              <text x="30" y="114" text-anchor="end" class="chart-label">5</text>
+              <text x="30" y="164" text-anchor="end" class="chart-label">2</text>
+              <text x="30" y="214" text-anchor="end" class="chart-label">0</text>
+              <!-- X-axis labels -->
+              <text x="36" y="225" text-anchor="middle" class="chart-label">0</text>
+              <text x="151" y="225" text-anchor="middle" class="chart-label">500</text>
+              <text x="266" y="225" text-anchor="middle" class="chart-label">1000</text>
+              <text x="381" y="225" text-anchor="middle" class="chart-label">1500</text>
+              <text x="468" y="225" text-anchor="end" class="chart-label">2000</text>
+              <!-- Paths (populated by JS) -->
+              <path id="loss-train-path" class="chart-line chart-line-train" d=""/>
+              <path id="loss-dev-path" class="chart-line chart-line-dev" d=""/>
+              <line id="loss-cursor" class="chart-cursor" x1="0" y1="20" x2="0" y2="210" style="display:none;"/>
+              <circle id="loss-dot-train" class="chart-dot chart-dot-train" cx="0" cy="0" r="3.5" style="display:none;"/>
+              <circle id="loss-dot-dev" class="chart-dot chart-dot-dev" cx="0" cy="0" r="3.5" style="display:none;"/>
+            </svg>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-swatch swatch-train"></span>Train</span>
+              <span class="legend-item"><span class="legend-swatch swatch-dev"></span>Validation</span>
+            </div>
+          </div>
+
+          <label for="loss-slider" class="field-label">Drag to scrub training steps (0 → 2 000)</label>
           <input type="range" id="loss-slider" class="range-slider" min="0" max="2000" step="10" value="2000">
 
-          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.25rem;">
+          <div class="loss-bars">
             <div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-subtle); margin-bottom: 0.25rem;">
-                <span class="font-mono uppercase">Train Loss</span>
-                <span class="font-mono tabular-nums">0.00 → 11.20</span>
+              <div class="bar-head">
+                <span class="font-mono uppercase small-label">Train Loss</span>
+                <span class="font-mono tabular-nums small-label">0.0 → 11.2</span>
               </div>
               <div class="loss-bar"><span id="loss-train-bar"></span></div>
             </div>
             <div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--color-subtle); margin-bottom: 0.25rem;">
-                <span class="font-mono uppercase">Validation (Dev) Loss</span>
-                <span class="font-mono tabular-nums">0.00 → 11.20</span>
+              <div class="bar-head">
+                <span class="font-mono uppercase small-label">Validation Loss</span>
+                <span class="font-mono tabular-nums small-label">0.0 → 11.2</span>
               </div>
-              <div class="loss-bar"><span id="loss-dev-bar"></span></div>
+              <div class="loss-bar"><span id="loss-dev-bar" class="bar-dev"></span></div>
             </div>
           </div>
         </div>
@@ -380,33 +601,36 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Checkpoint Inspector</span>
-              <h3 style="font-size: 1.75rem; margin-top: 0.35rem;">Sample Text Across Training Checkpoints</h3>
+              <h3 class="card-title">Sample Text Across Training Checkpoints</h3>
             </div>
-            <p class="font-mono text-subtle" style="font-size: 0.75rem;">13M Model Samples</p>
+            <p class="font-mono text-subtle small-label">13M Model Samples</p>
           </div>
-          <p class="text-muted" style="font-size: 0.875rem; max-width: 44rem; line-height: 1.625;">
-            Compare how the same 13M model answers prompts at different training milestones: from raw unaligned next-token prediction (Base), to supervised conversational responses (SFT), to verified reasoning completions (GRPO).
+          <p class="text-muted field-hint">
+            Compare how the same 13M model answers prompts at different training milestones:
+            from raw unaligned next-token prediction (Base), to supervised conversational responses
+            (SFT), to verified reasoning completions (GRPO). The same weights, three different
+            loss surfaces.
           </p>
 
           <div style="margin-top: 1.25rem;">
-            <p class="field-label" style="margin-bottom: 0.5rem;">Select Model Checkpoint Stage:</p>
-            <div id="stage-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+            <p class="field-label">Select Model Checkpoint Stage:</p>
+            <div id="stage-buttons" class="button-row"></div>
           </div>
 
           <div style="margin-top: 1rem;">
-            <p class="field-label" style="margin-bottom: 0.5rem;">Select Test Prompt:</p>
-            <div id="prompt-buttons" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+            <p class="field-label">Select Test Prompt:</p>
+            <div id="prompt-buttons" class="button-row"></div>
           </div>
 
-          <div style="display: grid; gap: 1rem; margin-top: 1.25rem;">
-            <article style="background-color: var(--color-elevated); border: 1px solid rgba(24, 22, 20, 0.08); border-radius: 0.5rem; padding: 1rem;">
-              <p id="stage-prompt-title" class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;"></p>
-              <p id="stage-prompt-text" class="text-fg font-mono" style="font-size: 0.875rem; margin-top: 0.5rem; background-color: var(--color-surface); padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid rgba(24, 22, 20, 0.06);"></p>
-              <pre id="generated-reply" class="font-mono text-fg" style="margin-top: 0.75rem; font-size: 0.875rem; line-height: 1.6; white-space: pre-wrap; background-color: #ffffff; padding: 0.875rem; border-radius: 4px; border: 1px solid rgba(24, 22, 20, 0.08);"></pre>
+          <div class="sample-output">
+            <article class="sample-card">
+              <p id="stage-prompt-title" class="font-mono text-subtle uppercase small-label"></p>
+              <p id="stage-prompt-text" class="text-fg font-mono sample-prompt"></p>
+              <pre id="generated-reply" class="font-mono text-fg sample-reply"></pre>
             </article>
-            <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <div class="sample-actions">
               <button type="button" id="sample-btn" class="btn-primary">Sample Again</button>
-              <span id="sample-badge" class="font-mono text-subtle" style="display: none; height: 2.75rem; align-items: center; padding: 0 1rem; font-size: 0.75rem; box-shadow: var(--shadow-border); border-radius: 0.375rem; background-color: var(--color-surface);">
+              <span id="sample-badge" class="sample-badge" style="display: none;">
                 Curated checkpoint reply
               </span>
             </div>
@@ -424,60 +648,87 @@
         </div>
         <h2 class="section-title">Turning a Base Model into an Assistant</h2>
         <p class="section-subtitle">
-          After pretraining, the neural weights are frozen or fine-tuned with new objectives. Discover five classic and frontier post-training methods implemented in pure PyTorch on the exact same transformer backbone.
+          After pretraining, the neural weights are frozen or fine-tuned with new objectives.
+          Discover five classic and frontier post-training methods implemented in pure PyTorch on the
+          exact same transformer backbone. Each method changes the loss function; none changes the architecture.
         </p>
       </div>
 
       <div class="container" style="padding-bottom: 3.5rem;">
-        <div class="methods-grid" style="margin-top: 1rem;">
-          <article class="card">
+        <div class="methods-grid">
+          <article class="card method-card">
             <div class="card-header-bar">
               <span class="card-type-pill" style="background:#e8f0fe; color:#1a73e8; border-color:#d2e3fc;">Supervised</span>
-              <p class="font-mono text-subtle" style="font-size: 0.75rem;">Stage 1</p>
+              <p class="font-mono text-subtle small-label">Stage 1</p>
             </div>
-            <h3 style="font-size: 1.35rem; margin-top: 0.25rem;">SFT: Supervised Fine-Tuning</h3>
-            <p class="font-mono text-fg" style="font-size: 0.8rem; margin-top: 0.65rem; background-color: var(--color-elevated); padding: 0.4rem 0.6rem; border-radius: 4px; word-break: break-word;">ce = (CE(logits, y) * mask).sum() / mask.sum()</p>
-            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Instruction-answer pairs (Alpaca, Dolly). Loss masks prompt tokens so gradients backpropagate solely through assistant responses.</p>
+            <h3 class="method-title">SFT: Supervised Fine-Tuning</h3>
+            <p class="font-mono mono-block mono-block-sm">ce = (CE(logits, y) * mask).sum() / mask.sum()</p>
+            <p class="text-muted method-body">Instruction-answer pairs (Alpaca, Dolly). Loss masks prompt tokens so gradients backpropagate solely through assistant responses. Cheapest, most stable, but teaches imitation rather than preference.</p>
+            <ul class="method-stats">
+              <li><span>Data</span>10K–100K pairs</li>
+              <li><span>Cost</span>1× train pass</li>
+              <li><span>Stability</span>High</li>
+            </ul>
           </article>
 
-          <article class="card">
+          <article class="card method-card">
             <div class="card-header-bar">
               <span class="card-type-pill" style="background:#fef7e0; color:#b06000; border-color:#feefc3;">Reward Scoring</span>
-              <p class="font-mono text-subtle" style="font-size: 0.75rem;">Stage 2</p>
+              <p class="font-mono text-subtle small-label">Stage 2</p>
             </div>
-            <h3 style="font-size: 1.35rem; margin-top: 0.25rem;">RM: Reward Modeling</h3>
-            <p class="font-mono text-fg" style="font-size: 0.8rem; margin-top: 0.65rem; background-color: var(--color-elevated); padding: 0.4rem 0.6rem; border-radius: 4px; word-break: break-word;">L = −log σ(r(chosen) − r(rejected))</p>
-            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Bradley-Terry ranking on chosen/rejected preference completions. Replaces LM head with a scalar linear layer to score candidate completions.</p>
+            <h3 class="method-title">RM: Reward Modeling</h3>
+            <p class="font-mono mono-block mono-block-sm">L = −log σ(r(chosen) − r(rejected))</p>
+            <p class="text-muted method-body">Bradley-Terry ranking on chosen/rejected preference completions. Replaces LM head with a scalar linear layer to score candidate completions. Required precursor for PPO; bypassed entirely by DPO.</p>
+            <ul class="method-stats">
+              <li><span>Data</span>20K–200K prefs</li>
+              <li><span>Cost</span>1× train pass</li>
+              <li><span>Stability</span>Medium</li>
+            </ul>
           </article>
 
-          <article class="card">
+          <article class="card method-card">
             <div class="card-header-bar">
               <span class="card-type-pill" style="background:#e6f4ea; color:#137333; border-color:#ceead6;">Direct RL</span>
-              <p class="font-mono text-subtle" style="font-size: 0.75rem;">Stage 3</p>
+              <p class="font-mono text-subtle small-label">Stage 3</p>
             </div>
-            <h3 style="font-size: 1.35rem; margin-top: 0.25rem;">DPO / ORPO / KTO</h3>
-            <p class="font-mono text-fg" style="font-size: 0.8rem; margin-top: 0.65rem; background-color: var(--color-elevated); padding: 0.4rem 0.6rem; border-radius: 4px; word-break: break-word;">−log σ(β (π log-ratio − π_ref log-ratio))</p>
-            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Implicit reward formulation directly optimizes policy on preference pairs without separate reward model training or unstable online rollouts.</p>
+            <h3 class="method-title">DPO / ORPO / KTO</h3>
+            <p class="font-mono mono-block mono-block-sm">−log σ(β (π log-ratio − π_ref log-ratio))</p>
+            <p class="text-muted method-body">Implicit reward formulation directly optimises policy on preference pairs without separate reward model training or unstable online rollouts. DPO is the workhorse of modern alignment.</p>
+            <ul class="method-stats">
+              <li><span>Data</span>5K–50K prefs</li>
+              <li><span>Cost</span>1× train pass</li>
+              <li><span>Stability</span>High</li>
+            </ul>
           </article>
 
-          <article class="card">
+          <article class="card method-card">
             <div class="card-header-bar">
               <span class="card-type-pill" style="background:#fce8e6; color:#c5221f; border-color:#fad2cf;">Actor-Critic</span>
-              <p class="font-mono text-subtle" style="font-size: 0.75rem;">Stage 4</p>
+              <p class="font-mono text-subtle small-label">Stage 4</p>
             </div>
-            <h3 style="font-size: 1.35rem; margin-top: 0.25rem;">PPO: Proximal Policy RL</h3>
-            <p class="font-mono text-fg" style="font-size: 0.8rem; margin-top: 0.65rem; background-color: var(--color-elevated); padding: 0.4rem 0.6rem; border-radius: 4px; word-break: break-word;">−min(ratio · A, clip(ratio, 1±ε) · A)</p>
-            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">Classic reinforcement learning from human feedback (RLHF). Trains actor policy and critic value network with Generalized Advantage Estimation.</p>
+            <h3 class="method-title">PPO: Proximal Policy RL</h3>
+            <p class="font-mono mono-block mono-block-sm">−min(ratio · A, clip(ratio, 1±ε) · A)</p>
+            <p class="text-muted method-body">Classic RLHF. Trains actor policy and critic value network with Generalised Advantage Estimation. Powerful but notoriously unstable; requires four models in memory (actor, critic, ref, RM).</p>
+            <ul class="method-stats">
+              <li><span>Data</span>Online rollouts</li>
+              <li><span>Cost</span>4× memory</li>
+              <li><span>Stability</span>Low</li>
+            </ul>
           </article>
 
-          <article class="card">
+          <article class="card method-card">
             <div class="card-header-bar">
               <span class="card-type-pill" style="background:#f3e8fd; color:#8430ce; border-color:#e9d2fd;">Reasoning RL</span>
-              <p class="font-mono text-subtle" style="font-size: 0.75rem;">Stage 5</p>
+              <p class="font-mono text-subtle small-label">Stage 5</p>
             </div>
-            <h3 style="font-size: 1.35rem; margin-top: 0.25rem;">GRPO: Group Relative RL</h3>
-            <p class="font-mono text-fg" style="font-size: 0.8rem; margin-top: 0.65rem; background-color: var(--color-elevated); padding: 0.4rem 0.6rem; border-radius: 4px; word-break: break-word;">A<sub>i</sub> = (r<sub>i</sub> − mean(G)) / (std(G) + ε)</p>
-            <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">DeepSeekMath/R1-style alignment. Samples groups of candidate answers per prompt, normalizes relative advantage, and drops the critic network entirely.</p>
+            <h3 class="method-title">GRPO: Group Relative RL</h3>
+            <p class="font-mono mono-block mono-block-sm">A<sub>i</sub> = (r<sub>i</sub> − mean(G)) / (std(G) + ε)</p>
+            <p class="text-muted method-body">DeepSeekMath/R1-style alignment. Samples groups of candidate answers per prompt, normalises relative advantage, and drops the critic network entirely. The current state-of-the-art for verifiable reasoning tasks.</p>
+            <ul class="method-stats">
+              <li><span>Data</span>Verifiable tasks</li>
+              <li><span>Cost</span>3× memory</li>
+              <li><span>Stability</span>Medium</li>
+            </ul>
           </article>
         </div>
       </div>
@@ -488,19 +739,20 @@
           <div class="section-tag-group">
             <span class="section-badge">FORMAL INVARIANTS</span>
           </div>
-          <h3 style="font-size: 2rem; margin-top: 0.5rem;">Theorems T1–T9</h3>
-          <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; line-height: 1.6;">
-            Nine structural properties proved by the codebase that remain true regardless of scaling or optimization wrappers.
+          <h3 class="narrative-title" style="font-size: 2rem;">Theorems T1–T9</h3>
+          <p class="text-muted field-hint">
+            Nine structural properties proved by the codebase that remain true regardless of scaling
+            or optimisation wrappers. Each is a statement about the architecture, not the training.
           </p>
-          <ol id="theorems-list" style="margin-top: 1.25rem; list-style: none; display: flex; flex-direction: column; gap: 0.25rem;"></ol>
+          <ol id="theorems-list" class="theorems-list"></ol>
         </div>
         <article class="card">
           <div class="card-header-bar">
-            <p id="theorem-id" class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;"></p>
+            <p id="theorem-id" class="font-mono text-subtle uppercase small-label"></p>
             <span class="card-type-pill">Formal Invariant</span>
           </div>
-          <h4 id="theorem-title" style="font-size: 1.5rem; margin-top: 0.5rem;"></h4>
-          <p id="theorem-body" class="text-muted" style="margin-top: 1rem; line-height: 1.625; font-size: 1rem;"></p>
+          <h4 id="theorem-title" class="theorem-title"></h4>
+          <p id="theorem-body" class="text-muted theorem-body"></p>
         </article>
       </div>
     </section>
@@ -514,37 +766,58 @@
         </div>
         <h2 class="section-title">GSM8K Verifier &amp; Exact RL Reward Scoring</h2>
         <p class="section-subtitle">
-          Test mathematical reasoning completions against gold standards and compute composite verifier reward bonuses. Compare how Base, SFT, DPO, PPO, and GRPO perform on structured reasoning.
+          Test mathematical reasoning completions against gold standards and compute composite verifier
+          reward bonuses. Compare how Base, SFT, DPO, PPO, and GRPO perform on structured reasoning
+          without ever training a reward model.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">Rigorous Objective Testing</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">Greedy Generation &amp; Verifiable Rewards</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            In mathematical benchmarks like GSM8K, subjective reward models are replaced with deterministic verifiers. The test script <span class="font-mono text-fg">scripts/eval_post_training.py</span> evaluates answers across all alignment stages:
+        <div class="section-narrative">
+          <p class="eyebrow">Rigorous Objective Testing <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">Greedy Generation &amp; Verifiable Rewards</h3>
+          <p class="text-muted">
+            In mathematical benchmarks like GSM8K, subjective reward models are replaced with deterministic
+            verifiers. The test script <span class="font-mono text-fg">scripts/eval_post_training.py</span>
+            evaluates answers across all alignment stages:
           </p>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;" class="text-muted">
-            <li style="display: flex; align-items: baseline; gap: 0.5rem;">
-              <span class="font-mono text-mark">1.2</span>
-              <span><strong>Gold + Format:</strong> Correct numeric answer enclosed in &lt;answer&gt; tags.</span>
+          <ul class="reward-tiers">
+            <li>
+              <span class="font-mono reward-score score-best">1.2</span>
+              <div>
+                <strong>Gold + Format</strong>
+                <p class="text-muted">Correct numeric answer enclosed in &lt;answer&gt; tags.</p>
+              </div>
             </li>
-            <li style="display: flex; align-items: baseline; gap: 0.5rem;">
-              <span class="font-mono text-mark">1.0</span>
-              <span><strong>Gold Only:</strong> Correct numeric answer, but missing required tags.</span>
+            <li>
+              <span class="font-mono reward-score score-good">1.0</span>
+              <div>
+                <strong>Gold Only</strong>
+                <p class="text-muted">Correct numeric answer, but missing required tags.</p>
+              </div>
             </li>
-            <li style="display: flex; align-items: baseline; gap: 0.5rem;">
-              <span class="font-mono text-subtle">0.2</span>
-              <span><strong>Format Bonus:</strong> Valid XML tags, but incorrect calculation.</span>
+            <li>
+              <span class="font-mono reward-score score-meh">0.2</span>
+              <div>
+                <strong>Format Bonus</strong>
+                <p class="text-muted">Valid XML tags, but incorrect calculation.</p>
+              </div>
             </li>
-            <li style="display: flex; align-items: baseline; gap: 0.5rem;">
-              <span class="font-mono text-subtle">0.0</span>
-              <span><strong>Total Miss:</strong> Neither valid formatting nor correct answer.</span>
+            <li>
+              <span class="font-mono reward-score score-zero">0.0</span>
+              <div>
+                <strong>Total Miss</strong>
+                <p class="text-muted">Neither valid formatting nor correct answer.</p>
+              </div>
             </li>
           </ul>
           <div class="callout-box">
-            <strong>The RLVR Revolution:</strong> Rule-based verifiers eliminate reward hacking, allowing GRPO to achieve strong reasoning gains on small models without large human feedback datasets.
+            <strong class="callout-title">The RLVR Revolution</strong>
+            <p>
+              Rule-based verifiers eliminate reward hacking, allowing GRPO to achieve strong reasoning
+              gains on small models without large human-feedback datasets. DeepSeek-R1 scaled this to
+              frontier performance with no labelled preference data at all.
+            </p>
           </div>
         </div>
 
@@ -552,21 +825,20 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Interactive Verifier</span>
-              <h4 style="font-size: 1.25rem; margin-top: 0.35rem;">Live GSM8K Problem C1</h4>
+              <h4 class="card-title-sm">Live GSM8K Problem C1</h4>
             </div>
-            <p class="font-mono text-subtle" style="font-size: 0.75rem;">Gold: 72</p>
+            <p class="font-mono text-subtle small-label">Gold: 72</p>
           </div>
 
-          <div style="background-color: var(--color-elevated); padding: 0.875rem; border-radius: 0.5rem; border: 1px solid rgba(24, 22, 20, 0.08);">
-            <p class="font-mono text-subtle uppercase" style="font-size: 0.7rem; letter-spacing: 0.14em;">Problem Prompt</p>
-            <p class="text-fg" style="font-size: 0.875rem; line-height: 1.6; margin-top: 0.35rem;">
-              Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
+          <div class="problem-box">
+            <p class="font-mono text-subtle uppercase small-label">Problem Prompt</p>
+            <p class="text-fg problem-text">
+              Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May.
+              How many clips did Natalia sell altogether in April and May?
             </p>
           </div>
 
-          <label for="completion-input" class="field-label" style="margin-top: 1.25rem;">
-            Candidate Model Completion:
-          </label>
+          <label for="completion-input" class="field-label">Candidate Model Completion</label>
           <textarea id="completion-input" rows="4" class="text-area">&lt;answer&gt;72&lt;/answer&gt;</textarea>
 
           <div class="btn-group" style="margin-top: 1rem;">
@@ -602,22 +874,34 @@
         </div>
         <h2 class="section-title">The Mathematics &amp; Meaning of τ</h2>
         <p class="section-subtitle">
-          Why training from scratch is about understanding the mathematical invariance of the architecture, free from opaque abstraction layers or commercial lock-in.
+          Why training from scratch is about understanding the mathematical invariance of the
+          architecture, free from opaque abstraction layers or commercial lock-in.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">Form Over Product</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">Fit, Not Forced</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            A substitution test proves that the core arithmetic does not depend on marketing buzzwords. Replace the code with any external library wrapper, and the matrix multiplications compute identically.
+        <div class="section-narrative">
+          <p class="eyebrow">Form Over Product <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">Fit, Not Forced</h3>
+          <p class="text-muted">
+            A substitution test proves that the core arithmetic does not depend on marketing buzzwords.
+            Replace the code with any external library wrapper, and the matrix multiplications compute
+            identically. The wrapper changes the engineer's typing; it does not change the gradient.
           </p>
-          <p class="text-muted" style="line-height: 1.625;">
-            Yet "from scratch" carries enduring educational significance: one clean architecture, built of transparent files, trained on open data, and aligned through loss functions anyone can read and inspect.
+          <p class="text-muted">
+            Yet "from scratch" carries enduring educational significance: one clean architecture,
+            built of transparent files, trained on open data, and aligned through loss functions anyone
+            can read and inspect. The from-scratch path is not cheaper or faster — it is the only path
+            along which understanding is provable.
           </p>
           <div class="callout-box">
-            <strong>The Core Tenet:</strong> Mastery comes from writing every projection, normalization, attention mask, and reward function yourself before delegating to automation.
+            <strong class="callout-title">The Core Tenet</strong>
+            <p>
+              Mastery comes from writing every projection, normalisation, attention mask, and reward
+              function yourself before delegating to automation. The five PyTorch files in
+              <span class="font-mono text-fg">src/models/</span> are deliberately shorter than this
+              web page.
+            </p>
           </div>
         </div>
 
@@ -625,36 +909,37 @@
           <div class="card-header-bar">
             <div>
               <span class="card-type-pill">Formal Invariant</span>
-              <h4 style="font-size: 1.25rem; margin-top: 0.35rem;">The τ System Definition</h4>
+              <h4 class="card-title-sm">The τ System Definition</h4>
             </div>
           </div>
-          <p class="font-mono text-fg" style="font-size: 0.875rem; background-color: var(--color-surface); padding: 0.75rem; border-radius: 4px; border: 1px solid rgba(24, 22, 20, 0.08); word-break: break-word;">
+          <p class="font-mono mono-block mono-block-accent">
             τ = (MLP, Head, Blockᴺ, CE, SFT → {DPO, PPO, GRPO})
           </p>
-          <p class="text-muted" style="font-size: 0.875rem; margin-top: 1rem; line-height: 1.6;">
-            From-scratch, in this reading, names τ. Existence as a commercial hosted service is not the goal of this project; understanding the immutable form is.
+          <p class="text-muted field-hint">
+            From-scratch, in this reading, names τ. Existence as a commercial hosted service is not
+            the goal of this project; understanding the immutable form is.
           </p>
 
-          <dl class="stat-dl" style="margin-top: 1.25rem;">
-            <div style="display: flex; gap: 1rem;">
-              <dt class="text-fg font-mono" style="width: 6.5rem; flex-shrink: 0; font-size: 0.8rem; font-weight: 600;">PROVED</dt>
-              <dd class="text-muted" style="font-size: 0.85rem;">T1–T9, closed-form parameter math, CE barrier, unique sink at chat</dd>
+          <dl class="stat-dl">
+            <div class="proof-row">
+              <dt class="text-fg font-mono proof-tag">PROVED</dt>
+              <dd class="text-muted">T1–T9, closed-form parameter math, CE barrier, unique sink at chat</dd>
             </div>
-            <div style="display: flex; gap: 1rem;">
-              <dt class="text-fg font-mono" style="width: 6.5rem; flex-shrink: 0; font-size: 0.8rem; font-weight: 600;">STIPULATED</dt>
-              <dd class="text-muted" style="font-size: 0.85rem;">r50k_base tokenizer, ReLU activations, untied LM head, pre-LayerNorm</dd>
+            <div class="proof-row">
+              <dt class="text-fg font-mono proof-tag">STIPULATED</dt>
+              <dd class="text-muted">r50k_base tokenizer, ReLU activations, untied LM head, pre-LayerNorm</dd>
             </div>
-            <div style="display: flex; gap: 1rem;">
-              <dt class="text-fg font-mono" style="width: 6.5rem; flex-shrink: 0; font-size: 0.8rem; font-weight: 600;">EMPIRICAL</dt>
-              <dd class="text-muted" style="font-size: 0.85rem;">13M / 77M / 406M / 3B scaling runs, GSM8K reward table, RM accuracy 0.574</dd>
+            <div class="proof-row">
+              <dt class="text-fg font-mono proof-tag">EMPIRICAL</dt>
+              <dd class="text-muted">13M / 77M / 406M / 3B scaling runs, GSM8K reward table, RM accuracy 0.574</dd>
             </div>
-            <div style="display: flex; gap: 1rem;">
-              <dt class="text-fg font-mono" style="width: 6.5rem; flex-shrink: 0; font-size: 0.8rem; font-weight: 600;">EXCLUDED</dt>
-              <dd class="text-muted" style="font-size: 0.85rem;">Black-box library wrappers (transformers, trl, peft)</dd>
+            <div class="proof-row">
+              <dt class="text-fg font-mono proof-tag">EXCLUDED</dt>
+              <dd class="text-muted">Black-box library wrappers (transformers, trl, peft)</dd>
             </div>
           </dl>
 
-          <p class="text-muted" style="margin-top: 1.5rem; font-size: 0.875rem; padding-top: 1rem; border-top: 1px solid rgba(24, 22, 20, 0.08);">
+          <p class="proof-footer">
             Original Author: <a href="https://github.com/FareedKhan-dev/train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">Fareed Khan</a>
             <span class="text-subtle"> · </span>
             Maintainer: <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">NotHarshhaa</a>
@@ -672,22 +957,24 @@
         </div>
         <h2 class="section-title">The Codebase &amp; Quickstart</h2>
         <p class="section-subtitle">
-          Clone the repository, configure virtual environments, run pre-training or post-training shell scripts, and launch the interactive Streamlit control panel with one click.
+          Clone the repository, configure virtual environments, run pre-training or post-training shell
+          scripts, and launch the interactive Streamlit control panel with one click.
         </p>
       </div>
 
       <div class="container section-grid">
-        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-          <p class="eyebrow">Hands-On Code</p>
-          <h3 style="font-size: 2rem; letter-spacing: -0.02em;">Run the Complete Pipeline</h3>
-          <p class="text-muted" style="line-height: 1.625;">
-            Clone the repository to run the minimal smoke configs, train small models on a free T4 GPU, and test your own reward functions.
+        <div class="section-narrative">
+          <p class="eyebrow">Hands-On Code <span class="eyebrow-rule"></span></p>
+          <h3 class="narrative-title">Run the Complete Pipeline</h3>
+          <p class="text-muted">
+            Clone the repository to run the minimal smoke configs, train small models on a free T4 GPU,
+            and test your own reward functions. The whole stack runs on a 16 GB consumer card.
           </p>
-          <p class="text-subtle" style="font-size: 0.875rem; line-height: 1.5;">
+          <p class="text-subtle field-hint">
             This interactive educational project is completely based on Fareed Khan's original work at
             <a href="https://github.com/FareedKhan-dev/train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">FareedKhan-dev/train-llm-from-scratch</a>.
           </p>
-          <div class="btn-group" style="margin-top: 1rem;">
+          <div class="btn-group">
             <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="btn-primary" style="flex: 1;">
               GitHub Repository
             </a>
@@ -696,18 +983,23 @@
             </a>
           </div>
           <div class="callout-box">
-            <strong>Streamlit UI:</strong> The repository includes a full interactive UI in <span class="font-mono text-fg">ui/app.py</span> for testing tokenizers, architecture sizing, and live inference locally.
+            <strong class="callout-title">Streamlit UI</strong>
+            <p>
+              The repository includes a full interactive UI in <span class="font-mono text-fg">ui/app.py</span>
+              for testing tokenisers, architecture sizing, and live inference locally. The web page you
+              are reading is a static sibling of that panel.
+            </p>
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="copy-stack">
           <!-- Setup -->
           <div class="copy-block">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;">1. Clone &amp; Basic Install</p>
+            <div class="copy-head">
+              <p class="font-mono text-subtle uppercase small-label">1. Clone &amp; Basic Install</p>
               <button type="button" class="copy-btn" data-code="git clone https://github.com/FareedKhan-dev/train-llm-from-scratch.git&#10;cd train-llm-from-scratch&#10;pip install -e .">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+                <span class="font-mono copy-label">copy</span>
               </button>
             </div>
             <pre class="copy-pre">git clone https://github.com/FareedKhan-dev/train-llm-from-scratch.git
@@ -717,11 +1009,11 @@ pip install -e .</pre>
 
           <!-- Extras -->
           <div class="copy-block">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;">2. Optional Extras (Training &amp; UI)</p>
+            <div class="copy-head">
+              <p class="font-mono text-subtle uppercase small-label">2. Optional Extras (Training &amp; UI)</p>
               <button type="button" class="copy-btn" data-code="pip install -e &quot;.[train]&quot;   # datasets + wandb&#10;pip install -e &quot;.[ui]&quot;      # streamlit control panel&#10;pip install -e &quot;.[docs]&quot;    # mkdocs&#10;pip install -e &quot;.[all]&quot;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+                <span class="font-mono copy-label">copy</span>
               </button>
             </div>
             <pre class="copy-pre">pip install -e ".[train]"   # datasets + wandb
@@ -732,11 +1024,11 @@ pip install -e ".[all]"</pre>
 
           <!-- Run -->
           <div class="copy-block">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;">3. Launch Post-Training Pipeline</p>
+            <div class="copy-head">
+              <p class="font-mono text-subtle uppercase small-label">3. Launch Post-Training Pipeline</p>
               <button type="button" class="copy-btn" data-code="NPROC=1 bash scripts/run_posttraining.sh">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+                <span class="font-mono copy-label">copy</span>
               </button>
             </div>
             <pre class="copy-pre">NPROC=1 bash scripts/run_posttraining.sh</pre>
@@ -744,11 +1036,11 @@ pip install -e ".[all]"</pre>
 
           <!-- UI Control Panel -->
           <div class="copy-block">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <p class="font-mono text-subtle uppercase" style="font-size: 0.75rem; letter-spacing: 0.14em;">4. Launch Streamlit Control Panel</p>
+            <div class="copy-head">
+              <p class="font-mono text-subtle uppercase small-label">4. Launch Streamlit Control Panel</p>
               <button type="button" class="copy-btn" data-code="pip install -e &quot;.[ui]&quot;&#10;streamlit run ui/app.py">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                <span class="font-mono copy-label" style="font-size: 0.75rem;">copy</span>
+                <span class="font-mono copy-label">copy</span>
               </button>
             </div>
             <pre class="copy-pre">pip install -e ".[ui]"
@@ -763,30 +1055,33 @@ streamlit run ui/app.py</pre>
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>
-        <p class="font-display italic text-fg" style="font-size: 1.5rem;">τ</p>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem; max-width: 28rem; line-height: 1.6;">
-          Training an LLM from scratch — an interactive reading of the repository. A
-          defined path code can certify, and a name fitted rather than free.
+        <p class="font-display italic text-fg footer-tau">τ</p>
+        <p class="text-muted footer-blurb">
+          Training an LLM from scratch — an interactive reading of the repository.
+          A path code can certify, and a name fitted rather than free.
         </p>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 1rem;">
+        <p class="text-muted footer-links">
           Source: <a href="https://github.com/NotHarshhaa/how-to-train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">how-to-train-llm-from-scratch</a>
           <span class="text-subtle"> · </span>
           <a href="https://notharshhaa.github.io/how-to-train-llm-from-scratch/" target="_blank" rel="noopener noreferrer" class="footer-link">Docs</a>
           <span class="text-subtle"> · </span>
           <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener noreferrer" class="footer-link">Attention is All You Need</a>
         </p>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.25rem;">
+        <p class="text-muted footer-links">
           Credits: Completely based on <a href="https://github.com/FareedKhan-dev/train-llm-from-scratch" target="_blank" rel="noopener noreferrer" class="footer-link">FareedKhan-dev/train-llm-from-scratch</a> by Fareed Khan.
         </p>
-        <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.25rem;">
+        <p class="text-muted footer-links">
           Site Maintainer: <a href="https://github.com/NotHarshhaa" target="_blank" rel="noopener noreferrer" class="footer-link">NotHarshhaa</a>
         </p>
       </div>
-      <p class="text-subtle" style="font-size: 0.75rem; letter-spacing: 0.05em;">
-        Form, not product. Occupied, not wrapped.
-      </p>
+      <p class="text-subtle footer-tag">Form, not product. Occupied, not wrapped.</p>
     </div>
   </footer>
+
+  <!-- Back-to-top button -->
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" style="display: none;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
 
   <script src="app.js"></script>
 </body>
